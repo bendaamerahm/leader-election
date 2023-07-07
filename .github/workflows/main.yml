@@ -19,10 +19,10 @@ jobs:
           version: 'latest'
           service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-      - name: Configure Kubectl
+      - name: Configure gcloud and kubectl
         run: |
-          echo "${{ secrets.KUBECONFIG }}" > kubeconfig.yml
-          gcloud auth activate-service-account --key-file=kubeconfig.yml
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > service_account.json
+          gcloud auth activate-service-account --key-file=service_account.json
           gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --zone ${{ secrets.GKE_CLUSTER_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Build and push Docker image
@@ -45,6 +45,7 @@ jobs:
           kubectl apply -f service-account.yml
           kubectl apply -f configmap.yml
           kubectl apply -f deployment.yml
+
       - name: Deploy to GKE
         run: |
           kubectl set image deployment/${{ secrets.DEPLOYMENT_NAME }} ${{ secrets.CONTAINER_NAME }}=${{ secrets.DOCKER_IMAGE_NAME }}:latest
