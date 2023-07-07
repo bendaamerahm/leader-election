@@ -45,7 +45,7 @@ jobs:
       - name: Install Google Cloud SDK
         run: |
           curl https://sdk.cloud.google.com | bash
-          source /root/google-cloud-sdk/path.bash.inc
+          source /home/runner/google-cloud-sdk/path.bash.inc
 
       - name: Update Google Cloud SDK
         run: |
