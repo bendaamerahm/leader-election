@@ -59,7 +59,7 @@ jobs:
       
       - name: Configure Kubectl
         run: |
-          echo "${{ secrets.KUBECONFIG }}" | base64 --decode | yq e '.' - > kubeconfig.yml
+          echo "${{ secrets.KUBECONFIG }}" | yq e '.' - > kubeconfig.yml
           kubectl config view --kubeconfig=kubeconfig.yml
           gcloud auth activate-service-account --key-file=kubeconfig.yml
           gcloud config set container/use_application_default_credentials true
