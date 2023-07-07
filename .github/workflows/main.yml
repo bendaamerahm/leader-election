@@ -41,6 +41,15 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/${{ secrets.IMAGE_NAME }}:latest
+      
+      - name: Install Google Cloud SDK
+        run: |
+          curl https://sdk.cloud.google.com | bash
+          source /root/google-cloud-sdk/path.bash.inc
+
+      - name: Update Google Cloud SDK
+        run: |
+          gcloud components update
 
       - name: Apply Kubernetes configuration
         run: |
