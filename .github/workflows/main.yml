@@ -45,7 +45,6 @@ jobs:
           kubectl apply -f service-account.yml
           kubectl apply -f configmap.yml
           kubectl apply -f deployment.yml
-
       - name: Deploy to GKE
         run: |
           kubectl set image deployment/${{ secrets.DEPLOYMENT_NAME }} ${{ secrets.CONTAINER_NAME }}=${{ secrets.DOCKER_IMAGE_NAME }}:latest
