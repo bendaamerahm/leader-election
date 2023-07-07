@@ -1,0 +1,50 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          version: 'latest'
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Configure Kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" > kubeconfig.yml
+          gcloud auth activate-service-account --key-file=kubeconfig.yml
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --zone ${{ secrets.GKE_CLUSTER_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_IMAGE_NAME }}:latest
+
+      - name: Apply Kubernetes configuration
+        run: |
+          kubectl apply -f role.yml
+          kubectl apply -f role-configmap.yml
+          kubectl apply -f role-write.yml
+          kubectl apply -f delete-pods-role.yml
+          kubectl apply -f rolebinding.yml
+          kubectl apply -f rolebinding-configmap.yml
+          kubectl apply -f rolebinding-write.yml
+          kubectl apply -f delete-pods-role-binding.yml
+          kubectl apply -f service-account.yml
+          kubectl apply -f configmap.yml
+          kubectl apply -f deployment.yml
+      - name: Deploy to GKE
+        run: |
+          kubectl set image deployment/${{ secrets.DEPLOYMENT_NAME }} ${{ secrets.CONTAINER_NAME }}=${{ secrets.DOCKER_IMAGE_NAME }}:latest
