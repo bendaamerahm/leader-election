@@ -50,6 +50,14 @@ jobs:
       - name: Update Google Cloud SDK
         run: |
           gcloud components update
+      
+      - name: Configure Kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" > kubeconfig.yml
+          gcloud auth activate-service-account --key-file=kubeconfig.yml
+          gcloud config set container/use_application_default_credentials true
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --zone ${{ secrets.GKE_CLUSTER_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
+          kubectl config set-credentials docker-desktop --auth-provider=gcp
 
       - name: Apply Kubernetes configuration
         run: |
